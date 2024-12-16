@@ -2,11 +2,9 @@
 
 namespace App\Observers;
 
-use App\Jobs\Server\CreateServer;
-use App\Jobs\Server\FinalizeServer;
-use App\Jobs\Server\InstallNginx;
-use App\Jobs\Server\InstallPHP;
 use App\Models\Server;
+use App\Server\ServerTypeFactory;
+use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 
 class ServerObserver
@@ -16,12 +14,17 @@ class ServerObserver
      */
     public function created(Server $server): void
     {
-        $batch = Bus::batch([
-            new CreateServer(),
-            new InstallNginx(),
-            new InstallPHP(),
-            new FinalizeServer()
-        ])->dispatch();
+        $serverType = ServerTypeFactory::make($server);
+
+        foreach ($serverType->tasks() as $task) {
+            $task->save();
+        }
+
+        $batch = Bus::batch($serverType->jobs())
+            ->progress(function (Batch $batch) {
+                \Log::info("Batch {$batch->id} is at {$batch->progress()}%");
+            })
+            ->dispatch();
 
         $server->update([
             'batch_id' => $batch->id
