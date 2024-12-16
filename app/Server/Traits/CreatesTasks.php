@@ -11,7 +11,9 @@ trait CreatesTasks
         return collect($this->jobs())->map(function ($task, $order) {
             $serverTask = ServerTask::make([
                 'order' => $order,
-                'job' => get_class($task)
+                'job' => get_class($task),
+                'title' => $task->title(),
+                'description' => $task->description(),
             ]);
 
             $serverTask->server()->associate($this->server);

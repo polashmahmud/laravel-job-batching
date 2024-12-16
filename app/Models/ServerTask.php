@@ -11,11 +11,18 @@ class ServerTask extends Model
 {
     use HasStates;
 
-    protected $fillable = ['server_id', 'order', 'job', 'state'];
+    protected $fillable = ['server_id', 'order', 'job', 'state', 'title', 'description'];
 
     protected $casts = [
         'state' => ServerTaskState::class,
     ];
+
+    public function next()
+    {
+        return $this->whereBelongsTo($this->server)
+            ->where('order', '>', $this->order)
+            ->first();
+    }
 
     public function server(): BelongsTo
     {

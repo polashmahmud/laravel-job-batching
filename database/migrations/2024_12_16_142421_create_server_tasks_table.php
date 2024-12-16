@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('server_tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('server_id')->constrained();
+            $table->string('title');
+            $table->text('description');
             $table->integer('order');
             $table->string('job');
             $table->string('state')->nullable();

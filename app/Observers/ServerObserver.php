@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Server;
 use App\Server\ServerTypeFactory;
 use App\Server\States\Complete;
+use App\Server\States\Failed;
 use App\Server\States\InProgress;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
@@ -30,6 +31,19 @@ class ServerObserver
                 $task = $server->taskCurrentlyProgress();
 
                 $task->state->transitionTo(Complete::class);
+
+                $task->next()->state->transitionTo(InProgress::class);
+            })
+            ->catch(function (Batch $batch) use ($server) {
+                $server->taskCurrentlyProgress()->state->transitionTo(Failed::class);
+            })
+            ->then(function (Batch $batch) use ($server) {
+                $server->update([
+                   'batch_id' => null,
+                     'provisioned_at' => now()
+                ]);
+
+                $server->tasks()->delete();
             })
             ->dispatch();
 

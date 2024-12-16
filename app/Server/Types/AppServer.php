@@ -20,10 +20,10 @@ class AppServer
     public function jobs(): array
     {
         return [
-            1 => new CreateServer(),
-            2 => new InstallNginx(),
-            3 => new InstallPHP(),
-            4 => new FinalizeServer()
+            1 => new CreateServer($this->server),
+            2 => new InstallNginx($this->server),
+            3 => new InstallPHP($this->server),
+            4 => new FinalizeServer($this->server)
         ];
     }
 }
