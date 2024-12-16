@@ -6,6 +6,10 @@
 
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        // Show server details
+       <x-server.progress-list>
+           @foreach($server->tasks as $task)
+               <x-server.progress-item :task="$task" />
+           @endforeach
+       </x-server.progress-list>
     </div>
 </div>
