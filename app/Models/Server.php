@@ -6,19 +6,33 @@ use App\Observers\ServerObserver;
 use App\Server\States\InProgress;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Bus;
 
 #[ObservedBy([ServerObserver::class])]
 class Server extends Model
 {
-    protected $fillable = ['batch_id', 'type', 'provisioned_at'];
+    protected $guarded = false;
 
-    public function taskCurrentlyProgress()
+    public function isProvisioned()
     {
-        return $this->tasks()->whereState('state',InProgress::class)->first();
+        return !is_null($this->provisioned_at);
     }
 
-    public function tasks(): HasMany
+    public function batch()
+    {
+        if (!$this->batch_id) {
+            return null;
+        }
+
+        return Bus::findBatch($this->batch_id);
+    }
+
+    public function taskCurrentlyInProgress()
+    {
+        return $this->tasks()->whereState('state', InProgress::class)->first();
+    }
+
+    public function tasks()
     {
         return $this->hasMany(ServerTask::class)
             ->orderBy('order', 'asc');

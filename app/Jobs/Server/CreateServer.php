@@ -7,6 +7,7 @@ use App\Models\Server;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\SkipIfBatchCancelled;
 
 class CreateServer implements ShouldQueue, ServerJob
 {
@@ -26,6 +27,11 @@ class CreateServer implements ShouldQueue, ServerJob
     public function handle(): void
     {
         sleep(2);
+    }
+
+    public function middleware(): array
+    {
+        return [new SkipIfBatchCancelled()];
     }
 
     public function title(): string

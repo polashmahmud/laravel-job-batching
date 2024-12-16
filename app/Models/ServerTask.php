@@ -8,18 +8,17 @@ use App\Server\States\InProgress;
 use App\Server\States\Pending;
 use App\Server\States\ServerTaskState;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\ModelStates\HasStates;
 
 class ServerTask extends Model
 {
     use HasStates;
 
-    protected $fillable = ['server_id', 'order', 'job', 'state', 'title', 'description'];
-
     protected $casts = [
         'state' => ServerTaskState::class,
     ];
+
+    protected $guarded = false;
 
     public function isPending(): bool
     {
@@ -48,7 +47,7 @@ class ServerTask extends Model
             ->first();
     }
 
-    public function server(): BelongsTo
+    public function server()
     {
         return $this->belongsTo(Server::class);
     }

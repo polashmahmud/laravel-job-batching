@@ -25,30 +25,44 @@ class ServerObserver
 
         $batch = Bus::batch($serverType->jobs())
             ->before(function (Batch $batch) use ($server) {
-                $server->tasks->first()->state->transitionTo(InProgress::class);
+                $server->tasks()->first()->state->transitionTo(InProgress::class);
             })
             ->progress(function (Batch $batch) use ($server) {
-                $task = $server->taskCurrentlyProgress();
+                $task = $server->taskCurrentlyInProgress();
 
                 $task->state->transitionTo(Complete::class);
 
-                $task->next()->state->transitionTo(InProgress::class);
+                $task->next()
+                    ->state
+                    ->transitionTo(InProgress::class);
             })
             ->catch(function (Batch $batch) use ($server) {
-                $server->taskCurrentlyProgress()->state->transitionTo(Failed::class);
+                $server->taskCurrentlyInProgress()
+                    ->state
+                    ->transitionTo(Failed::class);
             })
             ->then(function (Batch $batch) use ($server) {
                 $server->update([
-                   'batch_id' => null,
-                     'provisioned_at' => now()
+                    'batch_id' => null,
+                    'provisioned_at' => now()
                 ]);
 
                 $server->tasks()->delete();
             })
+            ->finally(function (Batch $batch) use ($server) {
+                if ($batch->cancelled() && $batch->failedJobs === 0) {
+                    $server->delete();
+                }
+            })
             ->dispatch();
 
         $server->update([
-            'batch_id' => $batch->id
+            'batch_id' => $batch->id,
         ]);
+    }
+
+    public function deleting(Server $server)
+    {
+        $server->tasks()->delete();
     }
 }
