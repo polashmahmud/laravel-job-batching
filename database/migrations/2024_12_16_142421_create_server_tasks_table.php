@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('server_id')->constrained();
             $table->integer('order');
             $table->string('job');
+            $table->string('state')->nullable();
             $table->timestamps();
         });
     }
