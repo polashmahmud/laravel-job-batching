@@ -30,7 +30,7 @@ class CreateServer implements ShouldQueue, ServerJob
 
     public function title(): string
     {
-        return 'Create Server';
+        return 'Create Server #'.$this->server->id;
     }
 
     public function description(): string
