@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Server;
 use App\Server\ServerTypeFactory;
+use App\Server\States\Complete;
 use App\Server\States\InProgress;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
@@ -25,8 +26,10 @@ class ServerObserver
             ->before(function (Batch $batch) use ($server) {
                 $server->tasks->first()->state->transitionTo(InProgress::class);
             })
-            ->progress(function (Batch $batch) {
-                //
+            ->progress(function (Batch $batch) use ($server) {
+                $task = $server->taskCurrentlyProgress();
+
+                $task->state->transitionTo(Complete::class);
             })
             ->dispatch();
 
