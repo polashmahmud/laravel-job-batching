@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Server;
 use App\Server\ServerTypeFactory;
+use App\Server\States\InProgress;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 
@@ -21,8 +22,11 @@ class ServerObserver
         }
 
         $batch = Bus::batch($serverType->jobs())
+            ->before(function (Batch $batch) use ($server) {
+                $server->tasks->first()->state->transitionTo(InProgress::class);
+            })
             ->progress(function (Batch $batch) {
-                \Log::info("Batch {$batch->id} is at {$batch->progress()}%");
+                //
             })
             ->dispatch();
 

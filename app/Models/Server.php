@@ -14,6 +14,7 @@ class Server extends Model
 
     public function tasks(): HasMany
     {
-        return $this->hasMany(ServerTask::class);
+        return $this->hasMany(ServerTask::class)
+            ->orderBy('order', 'asc');
     }
 }
